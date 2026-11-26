@@ -1,0 +1,15 @@
+{
+  "app": "idehpol",
+  "platform": "docker",
+  "port": 3000,
+  "healthCheck": {
+    "path": "/api/health",
+    "timeout": 30
+  },
+  "args": [],
+  "build": {
+    "location": ".",
+    "dockerfile": "Dockerfile"
+  },
+  "disallow": [".env", ".env.local", ".git", "node_modules", ".next"]
+}

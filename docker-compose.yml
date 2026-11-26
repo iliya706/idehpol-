@@ -1,0 +1,41 @@
+# استقرار یک‌مرحله‌ای ایده‌پل با Docker + PostgreSQL
+#
+#   SESSION_SECRET="یک-رشته-تصادفی-حداقل-۳۲-کاراکتری" docker compose up -d --build
+#   docker compose exec app npx drizzle-kit push
+#
+# سپس سایت روی http://SERVER_IP:3000 در دسترس است.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: idehpol-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: app_db
+    volumes:
+      - idehpol_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d app_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: idehpol-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/app_db
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET را در محیط تنظیم کنید}
+    ports:
+      - "3000:3000"
+
+volumes:
+  idehpol_pgdata:
